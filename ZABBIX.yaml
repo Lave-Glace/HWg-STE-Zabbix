@@ -1,0 +1,42 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 3de1fe18ccf04892af640c525c8ad724
+      name: 'Ethernet thermometer'
+  templates:
+    - uuid: 9a3a96a4dd7547e69f7e471c37c22d76
+      template: HWg-STE
+      name: HWg-STE
+      description: |
+        ## Overview
+        Monitoring temperature from HWg-STE via SNMP.
+        ## Author
+        Corrigé pour Zabbix 7.0
+      groups:
+        - name: 'Ethernet thermometer'
+      items:
+        - uuid: 6a8dc77d10fa492893b3dffeab55d1a4
+          name: 'Temperature probe'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.21796.4.1.3.1.5.1
+          key: 'sensor.value[1]'
+          delay: 30s
+          value_type: FLOAT
+          units: °C
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          triggers:
+            - uuid: b929b16a799f44a9bd080e760e8ca469
+              expression: 'last(/HWg-STE/sensor.value[1])>35'
+              name: 'Temperature too high (> 35°C)'
+              priority: DISASTER
+  graphs:
+    - uuid: 857431d822464800997a5f18a7821f0e
+      name: 'Temperature probe 1'
+      graph_items:
+        - color: 3333FF
+          item:
+            host: HWg-STE
+            key: 'sensor.value[1]'
